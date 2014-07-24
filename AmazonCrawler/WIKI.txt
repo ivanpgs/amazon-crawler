@@ -1,0 +1,123 @@
+=============================
+AmazonProductsWebCrawler Wiki
+=============================
+
+-----------------
+Tools
+-----------------
+Java 7
+IDE Eclipse Juno
+Maven 3
+Tomcat 7
+Spring Framework 4
+
+------------------
+External Libraries
+------------------
+
+
+---------------------------------------------------------------------------------------------------------
+Eclipse Juno required libraries (download from Juno Repository)
+---------------------------------------------------------------------------------------------------------
+
+Juno Repository: http://download.eclipse.org/releases/juno
+
+	In order to use Tomcat 7 or another server integrated in Eclipse you need to install:
+
+	- Web, XML and Java EE Development (with JST Server Adapters and JST Server Adapters Extensions).
+
+	To get the 'New Dynamic Web Project View' (included in Eclipse IDE for Java EE Developers) you
+	need to install the next library from repo:
+
+	- Web, XML, Java EE and OSGi Enterprise Development
+		- Eclipse Java EE Developer Tools
+	
+(Optional) Java class To UML Tool Eclipse Plugin
+
+	Help -> Install New Software:
+	UML Class Diagram Plug-in
+	Repository: http://www.objectaid.com/update
+	Install instructions at: http://www.objectaid.com/installation
+	
+(Optional) FindBugs Eclipse Plugin
+
+	Help -> Install New Software.
+	FindBugs Plug-in
+	Repository: http://findbugs.cs.umd.edu/eclipse/
+	Install instructions at: http://findbugs.sourceforge.net/manual/eclipse.html
+
+---------------------------------------------------------------------------------------------------------
+Starting the project
+---------------------------------------------------------------------------------------------------------
+
+(Article: http://www.mkyong.com/maven/how-to-create-a-web-application-project-with-maven/)
+
+#1. Creating Maven project from the command line:
+
+C:\Users\ivan\Programacion\workspace>mvn archetype:generate
+
+Set-up Maven options: default xxx, archetype (newer version, 1.x) : 6 and set the 
+'groupId', 'artifactID', y 'package' attributes:
+
+Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): xxx:
+
+Define value for property 'groupId': : com.ivanpgs
+Define value for property 'artifactId': : AmazonCrawler
+Define value for property 'version':  1.0-SNAPSHOT: :
+Define value for property 'package':  com.ivanpgs: : com.ivanpgs
+
+cd C:\Users\ivan\Programacion\workspace\AmazonCrawler>
+mvn compile exec:java -Dexec.mainClass="com.ivanpgs.xxx"
+
+#2. Importing the created 'AmazonCrawler' from Eclipse IDE:
+
+From Eclipse 'Package Explorer' view, mouse right-click ->Import->Maven->Existing Maven Projects
+
+Root Directory: C:\Users\ivan\Programacion\workspace\AmazonCrawler
+/pom.xml com.ivanpgs:AmazonCrawler:1.0-SNAPSHOT:jar
+
+---------------------------------------------------------------------------------------------------------
+DAO Mappin using Spring JDBC Template
+---------------------------------------------------------------------------------------------------------
+
+While querying the database for data I am going to use the following schema:
+
+http://www.studytrails.com/resources/images/spring/springjdbctemplate/diagram1.gif
+
+xxxService --> xxxDAO (impl xxxRowMapper) --> JdbcTemplat --> DataSource
+
+To get the data it can be implemented RowMapper (1 row) or use the BeanPropertyRowMapper passing
+the class you want to retrive as a parameter, e.g. Product.class.
+
+To extract several rows from a table you can implement the ResultSetExtractor.
+
+http://examples.javacodegeeks.com/enterprise-java/spring/jdbc/spring-jdbctemplate-example/
+
+For Batch updates / inserts into the system:
+
+http://docs.spring.io/spring/docs/3.0.0.M3/reference/html/ch13s04.html
+
+Also it is a good idea to create the RowMapper as an static class just to be instantiated only once. 
+
+http://forum.spring.io/forum/spring-projects/data/84537-static-inner-rowmapper-class-use-in-query-string-rowmapper-method
+
+Or as a Enum class, which would be like creating a Singleton:
+
+public enum ProductRowMapper implements RowMapper<Product> {
+        ;
+        ..............
+        metodos....
+	
+http://en.wikipedia.org/wiki/Singleton_pattern#The_Enum_way
+
+---------------------------------------------------------------------------------------------------------
+Troubleshooting (Solución de problemas)
+---------------------------------------------------------------------------------------------------------
+
+...
+
+
+
+
+
+

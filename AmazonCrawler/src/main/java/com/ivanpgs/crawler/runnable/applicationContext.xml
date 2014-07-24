@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+<!-- Anotation to get Spring reading the beans within the package to do the autowire 
+	(I am not using autowire annotations but writing the beans in this context file
+	and loading the context as a bootstrap) -->
+    
+<!-- Starting class of the application. It starts the contexts -->
+<bean id="amazonProductWebCrawler" class="com.ivanpgs.crawler.runnable.AmazonProductWebCrawler" scope="prototype">    
+</bean> 
+
+<!-- Bean used to execute the Parser/Retriever threads -->
+<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+	<property name="corePoolSize" value="21" />
+	<property name="maxPoolSize" value="21" />
+	<property name="WaitForTasksToCompleteOnShutdown" value="true" />
+</bean>
+
+<!-- ======================================================================== -->
+<!-- Producer/PageRetriever (Crawler) and consumer/PageParser (Spider) classes -->
+<!-- ======================================================================== -->
+
+<!-- This class is in charge of crawling the pages and retrieving new categories (queued in the abpCategoryQueue) 
+	 and new products (queued in the abpProductQueue) which will be parsed by the pageParser (Spider) -->
+<bean id="pageAnalizer" class="com.ivanpgs.crawler.producerconsumer.AmazonPageAnalizer">
+    <!-- Queues to store the different categories (for the Crawlers/Producers) and the products (for the Consumers/Spiders) -->
+    <property name="alreadyAddedCategorySet" ref="alreadyAddedCategorySet"/>
+    <property name="alreadyAddedProductSet" ref="alreadyAddedProductSet"/>
+    <property name="htmlParser" ref="htmlParser"/> 
+</bean>
+
+<!-- Helper class to parse HTML classes (implements various interfaces) -->
+<bean id="htmlParser" class="com.ivanpgs.crawler.common.impl.HTMLParser"/>
+
+<bean id="queueElementProvider" class="com.ivanpgs.crawler.producerconsumer.QueueElementProvider">
+    <property name="abpCategoryQueue" ref="abpCategoryQueue"/>
+	<property name="abpProductQueue" ref="abpProductQueue"/>
+</bean>
+<!-- ======================================================================== -->
+<!-- Shared structures to add the found categories and products -->
+<!-- ======================================================================== -->
+
+<!-- Shared queues -->
+<bean id="abpCategoryQueue" class="java.util.concurrent.LinkedBlockingQueue">
+    <constructor-arg index="0" type="int" value="1000"/>
+</bean>
+<bean id="abpProductQueue" class="java.util.concurrent.LinkedBlockingQueue">
+    <constructor-arg index="0" type="int" value="200"/>
+</bean>
+	
+<!-- Shared set of Categories and Products to avoid duplicate adds in the main queues -->
+<bean id="alreadyAddedCategorySet" class="java.util.HashSet"/>
+<bean id="alreadyAddedProductSet" class="java.util.HashSet"/>
+<!-- List of products retrieved -->
+<bean id="productList" class="java.util.LinkedList"/>
+
+<!-- ======================================================================== -->
+<!-- Thread handlers -->
+<!-- ======================================================================== -->
+<bean id="pageParserThread" class="com.ivanpgs.crawler.sync.PageParserThread" scope="prototype">
+    <constructor-arg index="0" ref="srvProductService"/>
+    <constructor-arg index="1" type="java.util.concurrent.BlockingQueue" ref="abpProductQueue"/>
+    <constructor-arg index="2" ref="pageAnalizer"/>
+    <constructor-arg index="3" type="java.lang.Integer" value="0"/>
+    <!-- This is a condition that can be set to stop the PageParser threads. 
+    If the products parsed by the threads acumulated in the productList get over this number then the PageParser threads will stop -->
+    <constructor-arg index="4" name="maxProduct" type="java.lang.Integer" value="200"/>
+</bean>
+
+<bean id="pageAnalizerThread" class="com.ivanpgs.crawler.sync.PageAnalizerThread" scope="prototype">
+    <constructor-arg index="0" type="java.util.concurrent.BlockingQueue" ref="abpCategoryQueue"/>
+    <constructor-arg index="1" type="java.util.concurrent.BlockingQueue" ref="abpProductQueue"/>
+    <constructor-arg index="2" ref="pageAnalizer"/>
+    <constructor-arg index="3" ref="queueElementProvider"/>
+    <!-- This is a condition that can be set to stop the PageRetriever threads. 
+    If the products added by the pageRetriever threads in the abpProductQueue (Product Queue) get over this number then the PageParser threads will stop -->
+    <constructor-arg index="4" name="maxProduct" type="java.lang.Integer" value="200"/>
+    <!-- Initial feed URL to start with the page Analizing  -->
+    <constructor-arg index="5" name="initialURL" type="java.lang.String" value="http://www.amazon.com/gp/site-directory"/>    
+</bean>
+
+<!-- ============================================================================= -->
+<!-- DATA BASE DEFINITIONS / DATASOURCE AND DAO DEFINITIONS -->
+<!-- ============================================================================= -->
+<!-- JDBC and DataSource -->
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+
+<!-- It can be used other connection library such as org.apache.commons.dbcp.BasicDataSource,
+	 but it has been decided to make the best use of Spring libraries. -->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
+	<property name="url"><value>jdbc:mysql://localhost:3306/amazon</value></property>
+	<property name="username"><value>root</value></property>
+	<property name="password"><value>japabanchel</value></property>
+</bean>
+<!-- ============================================================================= -->
+<!-- SERVICE LIST -->
+<!-- ============================================================================= -->
+<bean id="srvProductService" class="com.ivanpgs.crawler.model.service.impl.SrvProductServiceImpl">
+    <property name="productDAO" ref="productDAO"/>
+    <property name="products" ref="productList"/>
+</bean>
+
+<bean id="srvPageAnalizerService" class="com.ivanpgs.crawler.model.service.impl.SrvPageAnalizerServiceImpl">
+    <!-- Shared queues -->
+	<property name="abpCategoryQueue" ref="abpCategoryQueue"/>
+	<property name="abpProductQueue" ref="abpProductQueue"/>
+	<property name="pageAnalizerThread" ref="pageAnalizerThread"/>
+	<property name="pageAnalizer" ref="pageAnalizer"/>
+    <property name="pageParserThread" ref="pageParserThread"/>
+    <!-- property name="productList" ref="productList" -->
+    <!--property name="productService" ref="productService"-->
+    <!-- Number of PageAnalizer/Producers -->
+    <property name="numberOfPageAnalizers"><value>1</value></property>
+    <!-- Number of Parsers/Consumers -->
+    <property name="numberOfParsers"><value>20</value></property>
+    <property name="threadPoolTaskExecutor" ref="taskExecutor"/>  
+    <property name="srvProductService" ref="srvProductService"/> 
+</bean>
+
+<!-- ============================================================================= -->
+<!-- DAO LIST -->
+<!-- ============================================================================= -->
+<bean id="productDAO" class="com.ivanpgs.crawler.model.dao.impl.ProductDAOImpl">	
+	<property name="jdbcTemplate" ref="jdbcTemplate"/>
+</bean>
+<!-- ============================================================================= -->
+
+</beans>
+
