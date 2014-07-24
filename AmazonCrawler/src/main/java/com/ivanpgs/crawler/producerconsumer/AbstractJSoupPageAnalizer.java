@@ -289,7 +289,7 @@ public abstract class AbstractJSoupPageAnalizer implements PageAnalizer {
 			String productId, Class attributeClass) {
 		List<Enum> enumList = EnumUtils.getEnumList(attributeClass);
 		for (Enum productTitleEnum : enumList) {
-			Elements pagelinks = doc.select("[id=btAsinTitle]");
+			Elements pagelinks = doc.select(productTitleEnum.toString());
 			pagelinks = doc.select(productTitleEnum.toString());
 			if ((null != pagelinks.text())
 					&& (!"".equals(pagelinks.text().trim()))) {
