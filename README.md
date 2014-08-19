@@ -29,33 +29,34 @@ separation of crawler vs scraper, what sort of queuing mechanism used, etc.)
 Application Structure
 ----------------------
 
-[+] src/main/java/com/ivanpgs/crawler
- ---[+] common/		Directory containing different Enum classes defining the 
-			existing kind of Products, Categories and Atrributes.
- ---[+] common/interfaces 	Different interfaces used in the application
-				like Parser, PageAnalizer, Connection,...
- ---[+] common/impl 	Some of the implementation of the above interfaces
- ---[+] model/bean	Plain Objects used to store data (such as Product.java)
- ---[+] model/dao	Data Access Object (Like ProductDao.java)
- ---[+] model/dao/impl	Implementation of the Data Access Object
- ---[+] model/dao/rowmapper	Objects to map from the stored data to plain 
-				objects like Product.java.
- ---[+] model/service/interface Service contracts / interfaces
- ---[+] model/service/impl	Implementations of the services used in the app
-				like SrvProductService or SrvPageAnalizerService
- ---[+] model/service/produceconsumer	Several classes that helps build a
+<ul>
+<li>[+] src/main/java/com/ivanpgs/crawler</li>
+<li> ---[+] common/		Directory containing different Enum classes defining the 
+				existing kind of Products, Categories and Atrributes.</li>
+<li> ---[+] common/interfaces 	Different interfaces used in the application
+				like Parser, PageAnalizer, Connection,...</li>
+<li> ---[+] common/impl 	Some of the implementation of the above interfaces</li>
+<li> ---[+] model/bean	Plain Objects used to store data (such as Product.java)</li>
+<li> ---[+] model/dao	Data Access Object (Like ProductDao.java)</li>
+<li> ---[+] model/dao/impl	Implementation of the Data Access Object</li>
+<li> ---[+] model/dao/rowmapper	Objects to map from the stored data to plain 
+				objects like Product.java.</li>
+<li> ---[+] model/service/interface Service contracts / interfaces</li>
+<li> ---[+] model/service/impl	Implementations of the services used in the app<
+				like SrvProductService or SrvPageAnalizerService</li>
+<li> ---[+] model/service/produceconsumer	Several classes that helps build a
 			Producer - Consumer Pattern. Producers are in charge of
 			adding Products to a queue while the Consumers will
 			parse this data building a list of Products.
-			(This branch could be moved to the common.impl brand)
- ---[+] runnable	Directory where it is the executable class of the
+			(This branch could be moved to the common.impl brand)</li>
+<li> ---[+] runnable	Directory where it is the executable class of the
 			project and also the xml containing the app. context.
-			(Maybe it's better to rename to 'executable' package)
- ---[+] sync	Contains the Producer and Consumer main threads,
+			(Maybe it's better to rename to 'executable' package)</li>
+<li> ---[+] sync	Contains the Producer and Consumer main threads,
 		PageAnalizerThread (Producer) and PageParserThread (Consumer).
-		The behaviour is implemented in the run method (Runnable tasks)
- ---[+] utils	Directory with some class utilities.
-
+		The behaviour is implemented in the run method (Runnable tasks)</li>
+<li> ---[+] utils	Directory with some class utilities.</li>
+</ul>
 
 The Latest Version
 ------------------
