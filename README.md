@@ -28,7 +28,7 @@ separation of crawler vs scraper, what sort of queuing mechanism used, etc.)
 
 Application Structure
 ----------------------
-
+<pre><code>
 <ul>
 <li>[+] src/main/java/com/ivanpgs/crawler</li>
 <li> ---[+] common/		Directory containing different Enum classes defining the 
@@ -57,6 +57,7 @@ Application Structure
 		The behaviour is implemented in the run method (Runnable tasks)</li>
 <li> ---[+] utils	Directory with some class utilities.</li>
 </ul>
+</code></pre>
 
 The Latest Version
 ------------------
